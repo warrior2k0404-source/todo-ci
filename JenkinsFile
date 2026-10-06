@@ -1,10 +1,10 @@
+
 pipeline {
     agent {
-        label 'todo-ci-agent'
+        label 'your-docker-agent-label'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -24,6 +24,58 @@ pipeline {
             steps {
                 sh 'docker build -t todo-backend:ci ./backend'
                 sh 'docker build -t todo-frontend:ci ./frontend'
+            }
+        }
+
+        stage('Publish to Artifact Registry') {
+            steps {
+                withCredentials([
+                    file(
+                        credentialsId: 'gcp-artifact-registry-key',
+                        variable: 'GCP_KEY_FILE'
+                    )
+                ]) {
+                    sh '''
+                        set -eu
+
+                        PROJECT_ID="ccproject-ae950"
+                        REGION="asia-south1"
+                        REPOSITORY="todo-images"
+                        REGISTRY="${REGION}-docker.pkg.dev"
+                        IMAGE_TAG="$(git rev-parse --short=12 HEAD)"
+
+                        # Authenticate to Google Cloud
+                        gcloud auth activate-service-account \
+                            --key-file="$GCP_KEY_FILE"
+
+                        gcloud config set project "$PROJECT_ID"
+
+                        # Authenticate Docker to Artifact Registry
+                        gcloud auth print-access-token |
+                            docker login \
+                                -u oauth2accesstoken \
+                                --password-stdin \
+                                "https://${REGISTRY}"
+
+                        # Tag the already-built images with the Git SHA
+                        docker tag todo-backend:ci \
+                            "${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-backend:${IMAGE_TAG}"
+
+                        docker tag todo-frontend:ci \
+                            "${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-frontend:${IMAGE_TAG}"
+
+                        # Push both images
+                        docker push \
+                            "${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-backend:${IMAGE_TAG}"
+
+                        docker push \
+                            "${REGISTRY}/${PROJECT_ID}/${REPOSITORY}/todo-frontend:${IMAGE_TAG}"
+
+                        # Remove cached registry credentials from this agent
+                        docker logout "https://${REGISTRY}"
+                        gcloud auth revoke --all --quiet
+                    '''
+                }
             }
         }
     }
