@@ -1,7 +1,7 @@
 
 pipeline {
     agent {
-        label 'test-ci-agent'
+        label 'todo-ci-agent'
     }
 
     stages {
