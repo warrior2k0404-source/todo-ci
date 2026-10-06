@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from pymongo import MongoClient
@@ -12,7 +13,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-client = MongoClient("mongodb://mongodb:27017")
+import os
+
+client = MongoClient(
+    os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
+)
 
 db = client["todo_db"]
 todos_collection = db["todos"]
