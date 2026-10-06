@@ -1,7 +1,7 @@
 
 pipeline {
     agent {
-        label 'your-docker-agent-label'
+        label 'test-ci-agent'
     }
 
     stages {
