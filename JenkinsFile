@@ -1,0 +1,30 @@
+pipeline {
+    agent {
+        label 'todo-ci-agent'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('backend') {
+                    sh 'python -m pip install -r requirements.txt'
+                    sh 'python -m pytest'
+                }
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh 'docker build -t todo-backend:ci ./backend'
+                sh 'docker build -t todo-frontend:ci ./frontend'
+            }
+        }
+    }
+}
