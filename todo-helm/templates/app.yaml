@@ -85,7 +85,7 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: {{ .Values.backend.port }}
- c
+ 
           readinessProbe:
             httpGet:
               path: /
