@@ -78,22 +78,28 @@ pipeline {
                 }
             }
         }
-        
         stage('Update GitOps Repository') {
-            steps {
-                script {
-                    // Use the same commit SHA as the Docker image tag
-                    def imageTag = sh(
-                        script: 'git rev-parse --short=12 HEAD',
-                        returnStdout: true
-                    ).trim()
+        steps {
+            script {
+                // Use the same commit SHA as the Docker image tag
+                def imageTag = sh(
+                    script: 'git rev-parse --short=12 HEAD',
+                    returnStdout: true
+                ).trim()
 
-                    dir('gitops') {
-                        // Clone the private GitOps repository
-                        git branch: 'main',
+                dir('gitops') {
+                    // Clone the private GitOps repository
+                    git branch: 'main',
+                        credentialsId: 'gitops-repo-write',
+                        url: 'https://github.com/warrior2k0404-source/todo-gitops.git'
+
+                    // Make Git credentials available to the shell
+                    withCredentials([
+                        gitUsernamePassword(
                             credentialsId: 'gitops-repo-write',
-                            url: 'https://github.com/warrior2k0404-source/todo-gitops.git'
-
+                            gitToolName: 'Default'
+                        )
+                    ]) {
                         sh """
                             set -eu
 
@@ -115,20 +121,15 @@ pipeline {
                                 git commit \
                                     -m "Update Todo image tag to ${imageTag}"
 
-                                withCredentials([
-                                gitUsernamePassword(
-                                    credentialsId: 'gitops-repo-write',
-                                    gitToolName: 'Default'
-                                )
-                                ]) {
-                                sh 'git push origin HEAD:main'
-                                }
+                                git push origin HEAD:main
                             fi
                         """
                     }
                 }
             }
-        }
+         }
+       }
+
 
     }
 }
