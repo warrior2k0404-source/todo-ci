@@ -1,0 +1,22 @@
+# docker image values
+projectId: ccproject-ae950
+region: asia-south1
+repository: todo-images
+imageTag: d168355e08be
+
+frontend:
+  replicas: 1
+  image: todo-frontend
+  service:
+    type: LoadBalancer
+    port: 80
+
+backend:
+  replicas: 1
+  image: todo-backend
+  port: 8000
+
+mongodb:
+  image: mongo:7
+  port: 27017
+  storage: 5Gi
