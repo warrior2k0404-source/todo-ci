@@ -115,7 +115,14 @@ pipeline {
                                 git commit \
                                     -m "Update Todo image tag to ${imageTag}"
 
-                                git push origin HEAD:main
+                                withCredentials([
+                                gitUsernamePassword(
+                                    credentialsId: 'gitops-repo-write',
+                                    gitToolName: 'Default'
+                                )
+                                ]) {
+                                sh 'git push origin HEAD:main'
+                                }
                             fi
                         """
                     }
