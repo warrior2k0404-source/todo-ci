@@ -78,5 +78,50 @@ pipeline {
                 }
             }
         }
+        
+        stage('Update GitOps Repository') {
+            steps {
+                script {
+                    // Use the same commit SHA as the Docker image tag
+                    def imageTag = sh(
+                        script: 'git rev-parse --short=12 HEAD',
+                        returnStdout: true
+                    ).trim()
+
+                    dir('gitops') {
+                        // Clone the private GitOps repository
+                        git branch: 'main',
+                            credentialsId: 'gitops-repo-write',
+                            url: 'https://github.com/warrior2k0404-source/todo-gitops.git'
+
+                        sh """
+                            set -eu
+
+                            # Update the desired image version
+                            sed -i -E \
+                                's/^imageTag:.*/imageTag: ${imageTag}/' \
+                                todo-helm/values.yaml
+
+                            # Configure Git commit identity
+                            git config user.name "Jenkins"
+                            git config user.email "jenkins@localhost"
+
+                            # Commit and push only if the tag changed
+                            if git diff --quiet -- todo-helm/values.yaml; then
+                                echo "Image tag is already up to date"
+                            else
+                                git add todo-helm/values.yaml
+
+                                git commit \
+                                    -m "Update Todo image tag to ${imageTag}"
+
+                                git push origin HEAD:main
+                            fi
+                        """
+                    }
+                }
+            }
+        }
+
     }
 }
