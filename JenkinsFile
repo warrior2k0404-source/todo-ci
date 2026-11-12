@@ -20,6 +20,40 @@ pipeline {
             }
         }
 
+
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    script {
+                        def qualityGate = waitForQualityGate()
+
+                        if (qualityGate.status != 'OK') {
+                            error "SonarQube Quality Gate failed: ${qualityGate.status}"
+                        }
+
+                        echo "SonarQube Quality Gate passed!"
+                    }
+                }
+            }
+        }
+
+
+
         stage('Build Docker Images') {
             steps {
                 sh 'docker build -t todo-backend:ci ./backend'
