@@ -35,7 +35,7 @@ def home():
 
 @app.post("/todos")
 def create_todo(todo: Todo):
-    result = todo_collection.insert_one(todo.model_dump())
+    result = todos_collection.insert_one(todo.model_dump())
 
     return {
         "message": "Todo created",
