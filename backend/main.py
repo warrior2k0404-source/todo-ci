@@ -18,7 +18,7 @@ import os
 client = MongoClient(
     os.getenv("MONGODB_URL", "mongodb://mongodb:27017")
 )
-password=123434567
+
 db = client["todo_db"]
 todos_collection = db["todos"]
 
@@ -35,7 +35,7 @@ def home():
 
 @app.post("/todos")
 def create_todo(todo: Todo):
-    result = todos_collection.insert_one(todo.model_dump())
+    result = todo_collection.insert_one(todo.model_dump())
 
     return {
         "message": "Todo created",
