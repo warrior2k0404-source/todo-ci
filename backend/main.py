@@ -22,6 +22,8 @@ client = MongoClient(
 db = client["todo_db"]
 todos_collection = db["todos"]
 
+db = client["todo_db"]
+todos_collection = db["todos"]
 
 class Todo(BaseModel):
     title: str
