@@ -92,3 +92,9 @@ def delete_todo(todo_id: str):
         raise HTTPException(status_code=404, detail="Todo not found")
 
     return {"message": "Todo deleted"}
+
+
+
+def test_quality_gate():
+    if True:
+        print("This condition is always true")
