@@ -72,7 +72,8 @@ pipeline {
                         aquasec/trivy:latest \
                         image --scanners vuln \
                         --severity HIGH,CRITICAL \
-                        --exit-code 0 \
+                        --ignore-unfixed \
+                        --exit-code 1 \
                         todo-backend:ci
 
                     echo "Scanning frontend image..."
@@ -82,12 +83,12 @@ pipeline {
                         aquasec/trivy:latest \
                         image --scanners vuln \
                         --severity HIGH,CRITICAL \
-                        --exit-code 0 \
+                        --ignore-unfixed \
+                        --exit-code 1 \
                         todo-frontend:ci
                 '''
             }
         }
-
 
         stage('Publish to Artifact Registry') {
             steps {
