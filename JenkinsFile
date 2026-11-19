@@ -61,6 +61,34 @@ pipeline {
             }
         }
 
+
+        stage('Trivy Vulnerability Scan') {
+            steps {
+                sh '''
+                    echo "Scanning backend image..."
+
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest \
+                        image --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 0 \
+                        todo-backend:ci
+
+                    echo "Scanning frontend image..."
+
+                    docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy:latest \
+                        image --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 0 \
+                        todo-frontend:ci
+                '''
+            }
+        }
+
+
         stage('Publish to Artifact Registry') {
             steps {
                 withCredentials([
