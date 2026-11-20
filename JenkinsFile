@@ -196,3 +196,47 @@ pipeline {
 
     }
 }
+
+
+
+post {
+    always {
+        script {
+            def buildStatus = currentBuild.currentResult ?: 'SUCCESS'
+
+            def emailSubject = "[Jenkins] Todo CI/CD - ${buildStatus} - Build #${BUILD_NUMBER}"
+
+            def emailBody = """
+                <html>
+                <body>
+                    <h2>Todo Application - CI/CD Pipeline Report</h2>
+
+                    <p><b>Build Status:</b> ${buildStatus}</p>
+                    <p><b>Job Name:</b> ${JOB_NAME}</p>
+                    <p><b>Build Number:</b> #${BUILD_NUMBER}</p>
+                    <p><b>Git Commit:</b> ${env.GIT_COMMIT ?: 'Not available'}</p>
+
+                    <p>
+                        <b>Build URL:</b>
+                        <a href="${BUILD_URL}">${BUILD_URL}</a>
+                    </p>
+
+                    <hr/>
+                    <p>This is an automated Jenkins notification.</p>
+                </body>
+                </html>
+            """
+
+            try {
+                emailext(
+                    to: 'YOUR_EMAIL@gmail.com',
+                    subject: emailSubject,
+                    body: emailBody,
+                    mimeType: 'text/html'
+                )
+            } catch (Exception e) {
+                echo "Email notification failed: ${e.message}"
+            }
+        }
+    }
+}
