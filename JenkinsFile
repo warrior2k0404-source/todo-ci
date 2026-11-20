@@ -229,7 +229,7 @@ post {
 
             try {
                 emailext(
-                    to: 'YOUR_EMAIL@gmail.com',
+                    to: 'warrior2k0404@gmail.com',
                     subject: emailSubject,
                     body: emailBody,
                     mimeType: 'text/html'
